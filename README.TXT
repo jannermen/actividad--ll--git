@@ -4,3 +4,4 @@ PROYECTO TIENDA DE BARRIO
 3. Abrir index.html en el navegador
 4. Probar: Agregar producto, Registrar venta, Ver total del dia
 Endpoints: GET /productos, POST /productos, POST /ventas, GET /ventas/total-dia
+prueba de rama rama-prueba
