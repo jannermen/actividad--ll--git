@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Tienda de Barrio</title>
+  <style>
+    body { font-family: Arial; background: #fff7e6; padding: 20px; }
+    h1 { color: #d35400; text-align: center; }
+    h2 { color: #2e86c1; }
+    button { background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+    input { padding: 8px; margin: 3px; border-radius: 5px; border: 1px solid #ccc; }
+    .caja { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+  </style>
+</head>
+<body>
+  <h1>🏪 Mi Tienda de Barrio</h1>
+  <p style="text-align:center">Bienvenido, aquí encuentras lo que necesitas.</p>
+
+  <div class="caja">
+    <h2>Productos</h2>
+    <ul id="lista">
+      <li>Arroz - $3.500</li>
+      <li>Aceite - $12.000</li>
+      <li>Gaseosa - $4.000</li>
+      <li>Pan - $1.000</li>
+    </ul>
+  </div>
+
+  <div class="caja">
+    <h2>Agregar producto nuevo</h2>
+    <input type="text" id="nombre" placeholder="Nombre del producto">
+    <input type="number" id="precio" placeholder="Precio">
+    <button onclick="agregar()">Agregar</button>
+  </div>
+
+  <div class="caja">
+    <h2>Registrar Venta</h2>
+    <input type="text" id="ventaNombre" placeholder="¿Qué vendiste? Ej: Arroz">
+    <input type="number" id="ventaPrecio" placeholder="¿Por cuánto?">
+    <button onclick="vender()">Registrar Venta</button>
+  </div>
+
+  <div class="caja">
+    <h2>Ventas del día</h2>
+    <ul id="ventas"></ul>
+    <p><b>Total vendido: $<span id="total">0</span></b></p>
+  </div>
+
+  <script>
+    let total = 0;
+    function agregar() {
+      let nombre = document.getElementById("nombre").value;
+      let precio = document.getElementById("precio").value;
+      if(nombre == "" || precio == "") { alert("Escribe el nombre y el precio"); return; }
+      let li = document.createElement("li");
+      li.textContent = nombre + " - $" + precio;
+      document.getElementById("lista").appendChild(li);
+      document.getElementById("nombre").value = "";
+      document.getElementById("precio").value = "";
+    }
+    function vender() {
+      let n = document.getElementById("ventaNombre").value;
+      let p = document.getElementById("ventaPrecio").value;
+      if(n == "" || p == "") { alert("Escribe qué vendiste y por cuánto"); return; }
+      let li = document.createElement("li");
+      li.textContent = n + " - $" + p;
+      document.getElementById("ventas").appendChild(li);
+      total = total + Number(p);
+      document.getElementById("total").innerText = total;
+      document.getElementById("ventaNombre").value = "";
+      document.getElementById("ventaPrecio").value = "";
+      alert("Venta registrada. ¡Gracias por comprar!");
+    }
+  </script>
+<!-- CHATBOT TIENDA DEL BARRIO -->
+<div id="chat-boton" style="position:fixed; bottom:20px; right:20px; background:#25D366; color:white; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:30px; cursor:pointer; z-index:999;">💬</div>
+
+<div id="chat-ventana" style="display:none; position:fixed; bottom:90px; right:20px; width:320px; height:400px; background:white; border:1px solid #ccc; border-radius:15px; flex-direction:column; overflow:hidden; z-index:999; box-shadow:0 0 15px rgba(0,0,0,0.3);">
+  <div style="background:#25D366; color:white; padding:12px; font-weight:bold;">Chat Tienda del Barrio <span id="chat-cerrar" style="float:right; cursor:pointer;">X</span></div>
+  <div id="chat-mensajes" style="flex:1; padding:10px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+  <div style="display:flex; padding:8px; border-top:1px solid #eee;">
+    <input id="chat-input" type="text" placeholder="Escribe..." style="flex:1; padding:8px; border:1px solid #ccc; border-radius:10px;">
+    <button onclick="enviarChat()" style="background:#25D366; color:white; border:none; padding:8px 12px; margin-left:5px; border-radius:10px; cursor:pointer;">Enviar</button>
+  </div>
+</div>
+
+<script>
+const boton = document.getElementById('chat-boton');
+const ventana = document.getElementById('chat-ventana');
+const mensajes = document.getElementById('chat-mensajes');
+const input = document.getElementById('chat-input');
+boton.onclick = () => { ventana.style.display = ventana.style.display === 'none' ? 'flex' : 'none'; };
+document.getElementById('chat-cerrar').onclick = () => ventana.style.display = 'none';
+function agregarMensaje(texto, yo) {
+  const d = document.createElement('div');
+  d.textContent = texto;
+  d.style.cssText = yo ? 'align-self:flex-end; background:#DCF8C6; padding:8px; border-radius:10px; max-width:80%;' : 'align-self:flex-start; background:#eee; padding:8px; border-radius:10px; max-width:80%;';
+  mensajes.appendChild(d);
+  mensajes.scrollTop = mensajes.scrollHeight;
+}
+async function enviarChat() {
+  const texto = input.value.trim();
+  if (!texto) return;
+  agregarMensaje(texto, true);
+  input.value = '';
+  try {
+    const res = await fetch('/api/chat', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({mensaje: texto}) });
+    const data = await res.json();
+    agregarMensaje(data.respuesta, false);
+  } catch(e) {
+    agregarMensaje('Uy, se cayó el chatbot. Intenta de nuevo.', false);
+  }
+}
+input.addEventListener('keydown', e => { if(e.key === 'Enter') enviarChat(); });
+agregarMensaje('¡Hola! Soy el asistente de la Tienda del Barrio. Pregúntame por precios, horario o domicilio.', false);
+</script></body>
+</html>
